@@ -19,6 +19,6 @@ jobs:
 #          docker system prune -a -f
 #          cd privacybot/
 #          docker build . -t privacybot:latest
-#          docker run -d -e TOKEN=${{ secrets.TOKEN }} -e PAT=${{ secrets.PAT }} -e USERNAME_GITHUB=${{ secrets.USERNAME_GITHUB }} bot:latest
+#          docker run -d -e TOKEN=${{ secrets.TOKEN }} -e PAT=${{ secrets.PAT }} -e USERNAME_GITHUB=${{ secrets.USERNAME_GITHUB }} privacybot:latest
 #          cd ..
 #          rm -rf privacybot/
