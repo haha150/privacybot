@@ -27,7 +27,7 @@ class DealsBot(commands.Bot):
 def main ():
     logger = logging.getLogger(LOGGER)
     load_dotenv()
-    handler = logging.FileHandler(filename=LOG_FILE, encoding='utf-8', mode='w')
+    handler = logging.FileHandler(filename=LOG_FILE, encoding='utf-8', mode='a')
     intents = discord.Intents.all()
     client = DealsBot(logger, intents=intents, command_prefix='/')
     client.run(os.getenv(TOKEN), log_handler=handler, log_level=logging.INFO)
