@@ -10,7 +10,7 @@ LOG_FILE = 'discord.log'
 LOGGER = 'discord'
 TOKEN = 'TOKEN'
 
-class DealsBot(commands.Bot):
+class PrivacyBot(commands.Bot):
     def __init__(self, logger, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.logger = logger
@@ -29,7 +29,7 @@ def main ():
     load_dotenv()
     handler = logging.FileHandler(filename=LOG_FILE, encoding='utf-8', mode='a')
     intents = discord.Intents.all()
-    client = DealsBot(logger, intents=intents, command_prefix='/')
+    client = PrivacyBot(logger, intents=intents, command_prefix='/')
     client.run(os.getenv(TOKEN), log_handler=handler, log_level=logging.INFO)
     
 if __name__ == "__main__":
