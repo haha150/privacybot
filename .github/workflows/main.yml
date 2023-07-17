@@ -14,7 +14,7 @@ jobs:
         port: ${{ secrets.PORT }}
         script: |
           rm -rf privacybot/
-          git clone https://github.com/haha150/privacybot.git
+          git clone git@github.com:haha150/privacybot.git
 #          docker stop privacybot:latest
 #          docker system prune -a -f
 #          cd privacybot/
