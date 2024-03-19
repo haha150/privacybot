@@ -15,10 +15,12 @@ jobs:
         script: |
           rm -rf privacybot/
           git clone git@github.com:haha150/privacybot.git
-#          docker stop privacybot:latest
-#          docker system prune -a -f
-#          cd privacybot/
-#          docker build . -t privacybot:latest
-#          docker run -d -e TOKEN=${{ secrets.TOKEN }} -e PAT=${{ secrets.PAT }} -e USERNAME_GITHUB=${{ secrets.USERNAME_GITHUB }} privacybot:latest
-#          cd ..
+          docker stop privacybot
+          sleep 180
+          docker rm -f privacybot
+          docker image rm -f privacybot:latest
+          cd privacybot/
+          docker build . -t privacybot:latest
+          docker run -d -e TOKEN=${{ secrets.TOKEN }} -e PAT=${{ secrets.PAT }} -e USERNAME_GITHUB=${{ secrets.USERNAME_GITHUB }} --name privacybot privacybot:latest
+          cd ..
           rm -rf privacybot/

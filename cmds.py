@@ -91,6 +91,8 @@ class CmdsCog(commands.Cog):
     @discord.app_commands.guild_only()
     @discord.app_commands.command(name='listchannels', description='Lists all created channels.')
     async def listchannels(self, interaction: discord.Interaction):
+        if not self.bot.get_cog('PrivacyCog'):
+            await self.bot.add_cog(PrivacyCog(self.bot))
         cog = self.bot.get_cog('PrivacyCog')
         if cog:
             channels = ''
@@ -104,6 +106,53 @@ class CmdsCog(commands.Cog):
         else:
             await interaction.response.send_message('No channels created', ephemeral=True)
                         
+    @discord.app_commands.guild_only()
+    @discord.app_commands.command(name='addtrash', description='Add trash.')
+    async def addtrash(self, interaction: discord.Interaction, ban: str):
+        if await self.bot.is_owner(interaction.user):
+            if not self.bot.get_cog('PrivacyCog'):
+                await self.bot.add_cog(PrivacyCog(self.bot))
+            cog = self.bot.get_cog('PrivacyCog')
+            if cog:
+                cog.addTrash(int(ban))
+                await interaction.response.send_message('Trash added', ephemeral=True)
+            else:
+                await interaction.response.send_message('No trash added', ephemeral=True)
+        else:
+            await interaction.response.send_message('Cant help you loser!')
+
+    @discord.app_commands.guild_only()
+    @discord.app_commands.command(name='listtrash', description='Lists all trash.')
+    async def listtrash(self, interaction: discord.Interaction):
+        if await self.bot.is_owner(interaction.user):
+            if not self.bot.get_cog('PrivacyCog'):
+                await self.bot.add_cog(PrivacyCog(self.bot))
+            cog = self.bot.get_cog('PrivacyCog')
+            if cog:
+                if cog.trash:
+                    await interaction.response.send_message(cog.trash, ephemeral=True)
+                else:
+                    await interaction.response.send_message('No trash added yet', ephemeral=True)
+            else:
+                await interaction.response.send_message('No trash added yet', ephemeral=True)
+        else:
+            await interaction.response.send_message('Cant help you loser!')
+
+    @discord.app_commands.guild_only()
+    @discord.app_commands.command(name='cleartrash', description='Clear trash.')
+    async def cleartrash(self, interaction: discord.Interaction):
+        if await self.bot.is_owner(interaction.user):
+            if not self.bot.get_cog('PrivacyCog'):
+                await self.bot.add_cog(PrivacyCog(self.bot))
+            cog = self.bot.get_cog('PrivacyCog')
+            if cog:
+                cog.clearTrash()
+                await interaction.response.send_message('Trash cleared', ephemeral=True)
+            else:
+                await interaction.response.send_message('No trash cleared', ephemeral=True)
+        else:
+            await interaction.response.send_message('Cant help you loser!')
+
     @discord.app_commands.guild_only()
     @discord.app_commands.command(name='kill', description='Kill the bot. Can only be invoked by bot owner.')
     async def kill(self, interaction: discord.Interaction):

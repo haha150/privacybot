@@ -7,9 +7,18 @@ class PrivacyCog(commands.Cog):
         self.bot = bot
         self.prune.start()
         self.channels = []
+        self.id = 210888915090014208
+        self.trash = []
+        self.prune_trash.start()
 
     def addChannel(self, c):
         self.channels.append(c)
+
+    def addTrash(self, t):
+        self.trash.append(t)
+
+    def clearTrash(self):
+        self.trash.clear()
 
     def getChannels(self):
         return [channel.voice.name for channel in self.channels]
@@ -37,6 +46,17 @@ class PrivacyCog(commands.Cog):
                 await channel.text.delete()
                 await channel.role.delete()
                 self.channels.remove(channel)
+
+    @tasks.loop(seconds=30)
+    async def prune_trash(self):
+        for guild in self.bot.guilds:
+            smuts = guild.get_member(self.id)
+            if not smuts:
+                break
+            for t in self.trash:
+                ban = guild.get_member(t)
+                if ban and smuts.voice and ban.voice and smuts.voice.channel == ban.voice.channel:
+                    await ban.move_to(None)
 
     @prune.before_loop
     async def before_printer(self):
