@@ -243,11 +243,11 @@ class CmdsCog(commands.Cog):
         discord.app_commands.Choice(name="100 lines", value=100)
     ])
     async def logs(self, interaction: discord.Interaction, number: discord.app_commands.Choice[int]):
-        if number > 0 and number < 101:
+        if number.value > 0 and number.value < 101:
             if await self.bot.is_owner(interaction.user):
                 log = ''
                 with open('discord.log', 'r') as f:
-                    for line in (f.readlines() [-number:]):
+                    for line in (f.readlines() [-number.value:]):
                         log += line
                 if not log:
                     log = 'Logs empty!'
@@ -279,8 +279,8 @@ class CmdsCog(commands.Cog):
     @discord.app_commands.guild_only()
     @discord.app_commands.command(name='bulkmove', description='Bulk move users from one voice channel to another.')
     async def bulkmove(self, interaction: discord.Interaction, source: discord.VoiceChannel, destination: discord.VoiceChannel):
-        if not interaction.user.guild_permissions.move_members:
-            await interaction.response.send_message('You need the Move Members permission.', ephemeral=True)
+        if not await self.bot.is_owner(interaction.user):
+            await interaction.response.send_message('Cant help you loser!')
             return
         if source == destination:
             await interaction.response.send_message('Source and destination must be different.', ephemeral=True)

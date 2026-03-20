@@ -23,6 +23,8 @@ class PrivacyBot(commands.Bot):
             await self.add_cog(PrivacyCog(self))
         if not self.get_cog('CmdsCog'):
             await self.add_cog(CmdsCog(self))
+        synced = await self.tree.sync()
+        self.logger.info(f'Synced {len(synced)} command(s)')
 
 def main ():
     logger = logging.getLogger(LOGGER)
