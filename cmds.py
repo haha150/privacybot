@@ -1,10 +1,81 @@
 import logging
 from discord.ext import commands
 import discord
+from discord import ui
 import os
 import requests
 from privacy import PrivacyCog
 from models import PrivacyChannel
+
+
+class BulkMoveView(ui.View):
+    def __init__(self, source: discord.VoiceChannel, destination: discord.VoiceChannel):
+        super().__init__(timeout=60)
+        self.source = source
+        self.destination = destination
+        self.selected_member_ids: list[int] = []
+
+        members = source.members
+        if not members:
+            return
+
+        select = ui.Select(
+            placeholder="Select users to move...",
+            min_values=1,
+            max_values=len(members),
+            options=[
+                discord.SelectOption(label=m.display_name, value=str(m.id))
+                for m in members[:25]
+            ],
+        )
+        select.callback = self.select_callback
+        self.add_item(select)
+
+    async def select_callback(self, interaction: discord.Interaction):
+        self.selected_member_ids = [int(v) for v in interaction.data["values"]]
+        await interaction.response.defer()
+
+    @ui.button(label="Move Selected", style=discord.ButtonStyle.primary)
+    async def move_selected(self, interaction: discord.Interaction, button: ui.Button):
+        if not self.selected_member_ids:
+            await interaction.response.send_message("No users selected.", ephemeral=True)
+            return
+        moved = []
+        failed = []
+        for mid in self.selected_member_ids:
+            member = self.source.guild.get_member(mid)
+            if member and member.voice and member.voice.channel == self.source:
+                try:
+                    await member.move_to(self.destination)
+                    moved.append(member.display_name)
+                except discord.Forbidden:
+                    failed.append(member.display_name)
+            else:
+                failed.append(str(mid))
+        msg = f"Moved {len(moved)} user(s) to **{self.destination.name}**."
+        if failed:
+            msg += f"\nFailed to move: {', '.join(failed)}"
+        self.stop()
+        await interaction.response.edit_message(content=msg, view=None)
+
+    @ui.button(label="Move All", style=discord.ButtonStyle.secondary)
+    async def move_all(self, interaction: discord.Interaction, button: ui.Button):
+        moved = []
+        failed = []
+        for member in list(self.source.members):
+            try:
+                await member.move_to(self.destination)
+                moved.append(member.display_name)
+            except discord.Forbidden:
+                failed.append(member.display_name)
+        msg = f"Moved {len(moved)} user(s) to **{self.destination.name}**."
+        if failed:
+            msg += f"\nFailed to move: {', '.join(failed)}"
+        self.stop()
+        await interaction.response.edit_message(content=msg, view=None)
+
+    async def on_timeout(self):
+        self.stop()
 
 PAT = 'PAT'
 USERNAME_GITHUB = 'USERNAME_GITHUB'
@@ -204,6 +275,27 @@ class CmdsCog(commands.Cog):
             await interaction.response.send_message('Got logs', ephemeral=True, file=discord.File('discord.log'))
         else:
             await interaction.response.send_message('Cant help you loser!')
+
+    @discord.app_commands.guild_only()
+    @discord.app_commands.command(name='bulkmove', description='Bulk move users from one voice channel to another.')
+    async def bulkmove(self, interaction: discord.Interaction, source: discord.VoiceChannel, destination: discord.VoiceChannel):
+        if not interaction.user.guild_permissions.move_members:
+            await interaction.response.send_message('You need the Move Members permission.', ephemeral=True)
+            return
+        if source == destination:
+            await interaction.response.send_message('Source and destination must be different.', ephemeral=True)
+            return
+        if not source.members:
+            await interaction.response.send_message(f'No users in **{source.name}**.', ephemeral=True)
+            return
+        view = BulkMoveView(source, destination)
+        user_list = ', '.join(m.display_name for m in source.members[:25])
+        await interaction.response.send_message(
+            f'Users in **{source.name}**: {user_list}\n'
+            f'Select users to move to **{destination.name}**, or click **Move All**.',
+            view=view,
+            ephemeral=True,
+        )
 
     @discord.app_commands.guild_only()
     @discord.app_commands.command(name='deploy', description='Re-deploys the bot. Can only be invoked by bot owner.')

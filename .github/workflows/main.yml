@@ -1,5 +1,5 @@
 name: privacybot ci/cd
-on: [push, repository_dispatch]
+on: []
 jobs:
   build:
     name: Run
