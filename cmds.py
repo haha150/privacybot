@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from discord.ext import commands
 import discord
@@ -48,6 +49,7 @@ class BulkMoveView(ui.View):
                 try:
                     await member.move_to(self.destination)
                     moved.append(member.display_name)
+                    await asyncio.sleep(0.5)
                 except discord.Forbidden:
                     failed.append(member.display_name)
             else:
@@ -66,6 +68,7 @@ class BulkMoveView(ui.View):
             try:
                 await member.move_to(self.destination)
                 moved.append(member.display_name)
+                await asyncio.sleep(0.5)
             except discord.Forbidden:
                 failed.append(member.display_name)
         msg = f"Moved {len(moved)} user(s) to **{self.destination.name}**."
