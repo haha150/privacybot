@@ -4,7 +4,6 @@ from discord.ext import commands
 import discord
 from discord import ui
 import os
-import requests
 from privacy import PrivacyCog
 from models import PrivacyChannel
 
@@ -80,16 +79,11 @@ class BulkMoveView(ui.View):
     async def on_timeout(self):
         self.stop()
 
-PAT = 'PAT'
-USERNAME_GITHUB = 'USERNAME_GITHUB'
 
 class CmdsCog(commands.Cog):
     def __init__(self, bot):
         self.logger = logging.getLogger('discord')
         self.bot = bot
-        self.pat = os.getenv(PAT)
-        self.username = os.getenv(USERNAME_GITHUB)
-        self.deployed = False
 
     def cog_unload(self):
         self.logger.info('CmdsCog unloading')
@@ -300,19 +294,3 @@ class CmdsCog(commands.Cog):
             ephemeral=True,
         )
 
-    @discord.app_commands.guild_only()
-    @discord.app_commands.command(name='deploy', description='Re-deploys the bot. Can only be invoked by bot owner.')
-    async def deploy(self, interaction: discord.Interaction):
-        if await self.bot.is_owner(interaction.user):
-            if not self.deployed:
-                url = f'https://api.github.com/repos/{self.username}/privacybot/dispatches'
-                headers = { 'Authorization': f'Bearer {self.pat}' }
-                data = { 'event_type': 'Deploy' }
-                response = requests.post(url, headers=headers, json=data)
-                self.logger.info(response.text)
-                self.deployed = True
-                await interaction.response.send_message('Re-deploying...', ephemeral=True)
-            else:
-                await interaction.response.send_message('Already re-deployed, wait for it...', ephemeral=True)
-        else:
-            await interaction.response.send_message('Cant help you loser!')
